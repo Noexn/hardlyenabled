@@ -20,6 +20,12 @@ MANAGER_NAMES = ["apt", "dnf", "pacman", "apk", "zypper"]
 PRIVILEGE_NAMES = ["sudo", "doas"]
 
 
+SSH_SEARCH = {
+    "debian": "ssh",
+    "ubuntu": "ssh",
+}
+
+
 def linux_distro():
     distro_id = ""
     distro_id_like = []
@@ -61,12 +67,23 @@ def find_privilege():
     return ""
 
 
+def find_ssh(distro_id, distro_id_like):
+    if distro_id in SSH_SEARCH:
+        return SSH_SEARCH[distro_id]
+    for relative in distro_id_like:
+        if relative in SSH_SEARCH:
+            return SSH_SEARCH[relative]
+    return "sshd"
+
+
 if __name__ == "__main__":
     distro_id, distro_id_like = linux_distro()
     package_manager = find_package_manager(distro_id, distro_id_like)
     privilege = find_privilege()
+    ssh_search = find_ssh(distro_id, distro_id_like)
     print(distro_id)
     print(distro_id_like)
     print(package_manager)
     print(privilege)
+    print(ssh_search)
 

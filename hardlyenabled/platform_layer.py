@@ -26,6 +26,12 @@ SSH_SEARCH = {
 }
 
 
+INIT_PROGRAMS = {
+    "rc-service": "openrc",
+    "sv": "runit",
+}
+
+
 def linux_distro():
     distro_id = ""
     distro_id_like = []
@@ -76,14 +82,25 @@ def find_ssh(distro_id, distro_id_like):
     return "sshd"
 
 
+def find_init_program():
+    if os.path.exists("/run/systemd/system"):
+        return "systemd"
+    for program in INIT_PROGRAMS:
+        if shutil.which(program):
+            return INIT_PROGRAMS[program]
+    return ""
+
+
 if __name__ == "__main__":
     distro_id, distro_id_like = linux_distro()
     package_manager = find_package_manager(distro_id, distro_id_like)
     privilege = find_privilege()
     ssh_search = find_ssh(distro_id, distro_id_like)
+    init_program = find_init_program()
     print(distro_id)
     print(distro_id_like)
     print(package_manager)
     print(privilege)
     print(ssh_search)
+    print(init_program)
 

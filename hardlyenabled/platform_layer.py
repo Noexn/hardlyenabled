@@ -12,7 +12,7 @@ def linux_distro():
     with open(path) as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith("#"):
+            if not line or line.startswith("#") or "=" not in line:
                 continue
             key, value = line.split("=", 1)
             value = value.strip("\"'")
@@ -23,7 +23,8 @@ def linux_distro():
     return distro_id, distro_id_like
 
 
-distro_id, distro_id_like = linux_distro()
-print(distro_id)
-print(distro_id_like)
+if __name__ == "__main__":
+    distro_id, distro_id_like = linux_distro()
+    print(distro_id)
+    print(distro_id_like)
 

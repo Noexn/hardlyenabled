@@ -17,6 +17,9 @@ PACKAGE_MANAGERS = {
 MANAGER_NAMES = ["apt", "dnf", "pacman", "apk", "zypper"]
 
 
+PRIVILEGE_NAMES = ["sudo", "doas"]
+
+
 def linux_distro():
     distro_id = ""
     distro_id_like = []
@@ -51,10 +54,19 @@ def find_package_manager(distro_id, distro_id_like):
     return ""
 
 
+def find_privilege():
+    for privilege in PRIVILEGE_NAMES:
+        if shutil.which(privilege):
+            return privilege
+    return ""
+
+
 if __name__ == "__main__":
     distro_id, distro_id_like = linux_distro()
     package_manager = find_package_manager(distro_id, distro_id_like)
+    privilege = find_privilege()
     print(distro_id)
     print(distro_id_like)
     print(package_manager)
+    print(privilege)
 

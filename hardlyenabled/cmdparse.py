@@ -7,12 +7,19 @@ def  truncated_commands(command, choices):
             matches.append(choice)
     return matches
 
+
+def resolve(command, choices):
+    matches =  truncated_commands(command, choices)
+    if len(matches) == 1:
+        return matches[0], ""
+    elif len(matches) == 0:
+        return "",  f"% Invalid input detected at '^' marker."
+    else:
+        return "",f'% Ambiguous command:  "{command}"'
+
+
 if __name__ == "__main__":
     commands = ["show", "shutdown", "enable", "end", "exit"]
-    print(truncated_commands("sho", commands))
-    print(truncated_commands("sh", commands))
-    print(truncated_commands("s", commands))
-    print(truncated_commands("ena", commands))
-    print(truncated_commands("en", commands))
-    print(truncated_commands("e", commands))
-    print(truncated_commands("x", commands))
+    for test in ["show", "sho", "sh", "s", "x"]:
+        match, error = resolve(test,  commands)
+        print(f"{test}: match={match!r} error={error!r}")

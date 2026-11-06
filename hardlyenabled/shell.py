@@ -14,9 +14,25 @@ class HardlyShell(cmd.Cmd):
     def do_exit(self, arg):
         return True
 
+    def do_EOF(self, arg):
+        print()
+        return True
+
     def emptyline(self):
         pass
 
 
+def run():
+    shell = HardlyShell()
+    while True:
+        try:
+            shell.cmdloop()
+            break
+        except KeyboardInterrupt:
+            print("^C")
+            shell.intro = ""
+
+
 if __name__ == "__main__":
-    HardlyShell().cmdloop()
+    run()
+

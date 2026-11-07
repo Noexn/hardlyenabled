@@ -16,6 +16,7 @@ class HardlyShell(cmd.Cmd):
     intro = f"{constants.APP_NAME} {constants.VERSION}\n{constants.TAGLINE}\n"
     hostname = socket.gethostname()
     mode = "user"
+    arg_offset = 0
 
     def update_prompt(self):
         if self.mode == "user":
@@ -25,6 +26,11 @@ class HardlyShell(cmd.Cmd):
         elif self.mode == "configure":
             self.prompt = self.hostname + "(config)#"
 
+    def show_error(self, error, offset):
+        if error.startswith("% Invalid"):
+            print(" " * (len(self.prompt) + offset) + "^")
+        print(error)
+
     def preloop(self):
         self.update_prompt()
 
@@ -33,11 +39,10 @@ class HardlyShell(cmd.Cmd):
         if not line or line == "EOF":
             return line
         word, _, rest = line.partition(" ")
+        self.arg_offset = len(line) - len(rest.lstrip())
         match, error = cmdparse.resolve(word, MODE_COMMANDS[self.mode])
         if error:
-            if error.startswith("% Invalid"):
-                print(" " * len(self.prompt) + "^")
-            print(error)
+            self.show_error(error, 0)
             return ""
         return match + " " + rest
 
@@ -55,7 +60,7 @@ class HardlyShell(cmd.Cmd):
             arg = "terminal"
         match, error = cmdparse.resolve(arg, ["terminal"])
         if error:
-            print(error)
+            self.show_error(error, self.arg_offset)
             return
         self.mode = "configure"
         self.update_prompt()

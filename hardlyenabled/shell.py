@@ -1,7 +1,11 @@
 import cmd
 import socket
 
+from hardlyenabled import cmdparse
 from hardlyenabled import constants
+
+
+COMMANDS = ["hello", "help", "exit"]
 
 
 class HardlyShell(cmd.Cmd):
@@ -20,6 +24,16 @@ class HardlyShell(cmd.Cmd):
 
     def emptyline(self):
         pass
+
+    def default(self, line):
+        word, _, rest = line.partition(" ")
+        match, error = cmdparse.resolve(word, COMMANDS)
+        if error:
+            if error.startswith("% Invalid"):
+                print(" " * len(self.prompt) + "^")
+            print(error)
+            return False
+        return self.onecmd(match + " " + rest)
 
 
 def run():

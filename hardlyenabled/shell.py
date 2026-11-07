@@ -5,15 +5,46 @@ from hardlyenabled import cmdparse
 from hardlyenabled import constants
 
 
-COMMANDS = ["hello", "help", "exit"]
+MODE_COMMANDS = {
+    "user": ["enable", "exit"],
+    "privileged": ["enable", "disable", "exit"],
+}
 
 
 class HardlyShell(cmd.Cmd):
     intro = f"{constants.APP_NAME} {constants.VERSION}\n{constants.TAGLINE}\n"
-    prompt = socket.gethostname() + ">"
+    hostname = socket.gethostname()
+    mode = "user"
 
-    def do_hello(self, arg):
-        print("Hello from the hardly shell!")
+    def update_prompt(self):
+        if self.mode == "user":
+            self.prompt = self.hostname + ">"
+        elif self.mode == "privileged":
+            self.prompt = self.hostname + "#"
+
+    def preloop(self):
+        self.update_prompt()
+
+    def precmd(self, line):
+        line = line.strip()
+        if not line or line == "EOF":
+            return line
+        word, _, rest = line.partition(" ")
+        match, error = cmdparse.resolve(word, MODE_COMMANDS[self.mode])
+        if error:
+            if error.startswith("% Invalid"):
+                print(" " * len(self.prompt) + "^")
+            print(error)
+            return ""
+        return match + " " + rest
+
+    def do_enable(self, arg):
+        self.mode = "privileged"
+        self.update_prompt()
+
+    def do_disable(self, arg):
+        self.mode = "user"
+        self.update_prompt()
 
     def do_exit(self, arg):
         return True
@@ -24,16 +55,6 @@ class HardlyShell(cmd.Cmd):
 
     def emptyline(self):
         pass
-
-    def default(self, line):
-        word, _, rest = line.partition(" ")
-        match, error = cmdparse.resolve(word, COMMANDS)
-        if error:
-            if error.startswith("% Invalid"):
-                print(" " * len(self.prompt) + "^")
-            print(error)
-            return False
-        return self.onecmd(match + " " + rest)
 
 
 def run():

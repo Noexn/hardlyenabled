@@ -7,7 +7,8 @@ from hardlyenabled import constants
 
 MODE_COMMANDS = {
     "user": ["enable", "exit"],
-    "privileged": ["enable", "disable", "exit"],
+    "privileged": ["enable", "disable", "configure", "exit"],
+    "configure": ["end", "exit"],
 }
 
 
@@ -21,6 +22,8 @@ class HardlyShell(cmd.Cmd):
             self.prompt = self.hostname + ">"
         elif self.mode == "privileged":
             self.prompt = self.hostname + "#"
+        elif self.mode == "configure":
+            self.prompt = self.hostname + "(config)#"
 
     def preloop(self):
         self.update_prompt()
@@ -46,7 +49,26 @@ class HardlyShell(cmd.Cmd):
         self.mode = "user"
         self.update_prompt()
 
+    def do_configure(self, arg):
+        arg = arg.strip()
+        if not arg:
+            arg = "terminal"
+        match, error = cmdparse.resolve(arg, ["terminal"])
+        if error:
+            print(error)
+            return
+        self.mode = "configure"
+        self.update_prompt()
+
+    def do_end(self, arg):
+        self.mode = "privileged"
+        self.update_prompt()
+
     def do_exit(self, arg):
+        if self.mode == "configure":
+            self.mode = "privileged"
+            self.update_prompt()
+            return
         return True
 
     def do_EOF(self, arg):
